@@ -91,9 +91,15 @@ function load() {
 }
 exports.load = load;
 function addTile(x, y, frame) {
+    let dx = (x * 256);
+    let dy = (y * 256);
+    dy -= (y * 64);
+    if (y % 2 === 1) {
+        dx += 128;
+    }
     let sprite = new Cozy.Sprite({
         texture: 'tileset_1',
-        position: { x: (x * 256), y: (y * 256) },
+        position: { x: dx, y: dy },
         frameSize: {
             x: 256,
             y: 384
@@ -110,18 +116,13 @@ function start() {
         renderable: true
     });
     layer = plane.addRenderLayer();
-    addTile(0, 0, 0);
-    addTile(1, 0, 1);
-    addTile(2, 0, 2);
-    addTile(3, 0, 3);
-    addTile(0, 1, 4);
-    addTile(1, 1, 5);
-    addTile(2, 1, 6);
-    addTile(3, 1, 7);
-    addTile(0, 2, 8);
-    addTile(1, 2, 9);
-    addTile(2, 2, 10);
-    addTile(3, 2, 11);
+    var y = 0;
+    var x = 0;
+    for (y = 0; y < 20; y++) {
+        for (x = 0; x < 30; x++) {
+            addTile(x, y, Math.floor(Math.random() * Math.floor(39)));
+        }
+    }
     Cozy.unpause();
 }
 exports.start = start;
