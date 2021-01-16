@@ -5,6 +5,7 @@ let ButtonState: Cozy.ButtonState;
 let plane:Cozy.RenderPlane;
 let layer:Cozy.Layer;
 let sprite:Cozy.Sprite;
+let map:Cozy.Sprite[];
 
 export function load() {
   return Cozy.loadTextures({
@@ -12,20 +13,51 @@ export function load() {
   });
 }
 
+function addTile(x:number, y:number, frame:number) {
+    let sprite = new Cozy.Sprite({
+        texture: 'tileset_1',
+        position: { x: (x * 256), y: (y * 256) },
+        frameSize: {
+            x: 256,
+            y: 384
+        },
+        frame: frame
+    });
+   
+    layer.add(sprite);
+
+    map.push(sprite);
+}
+
 export function start() {
     Cozy.setBackground('#880088');
 
+    map = [];
     plane = Cozy.addPlane(Cozy.RenderPlane, {
         renderable: true
     });
 
-    let layer = plane.addRenderLayer();
-    sprite = new Cozy.Sprite({
-        texture: 'tileset_1',
-        position: { x: 50, y: 50 },
-    });
-    layer.add(sprite);
+    layer = plane.addRenderLayer();
+    
+    // layer.add(sprite);
+
+    addTile(0,0,0);
+    addTile(1,0,1);
+    addTile(2,0,2);
+    addTile(3,0,3);
+
+    addTile(0,1,4);
+    addTile(1,1,5);
+    addTile(2,1,6);
+    addTile(3,1,7);
+
+    addTile(0,2,8);
+    addTile(1,2,9);
+    addTile(2,2,10);
+    addTile(3,2,11);
+    
     Cozy.unpause();
+
 }
 
 export function frame(dt) {
@@ -36,7 +68,7 @@ export function frame(dt) {
         let dx = Cozy.Input.mouseInfo().dx;
         let dy = Cozy.Input.mouseInfo().dy;
         
-        sprite.adjustPosition(dx, dy);
+        layer.adjustPosition(dx, dy);
         console.log(`BOOP ${dx} ${dy}`);
     } else {
         console.log("UNBOOP");
