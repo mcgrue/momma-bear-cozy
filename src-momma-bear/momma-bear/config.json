@@ -1,0 +1,14 @@
+{
+    "title": "Momma Bear",
+    "userdata": "Momma Bear",
+    "version": "0.0.1",
+    "width": 1280,
+    "height": 960,
+    "integerUpscale": true,
+    "fullscreen": false,
+    "debug": true,
+    "author": "@bengrue <http://gruniverse.com>",
+    "controls": {
+        "mouse": true
+    }
+}

@@ -1,6 +1,6 @@
 import { mapO } from './Engine';
 
-enum ButtonState { UP, DOWN, IGNORED };
+export enum ButtonState { UP, DOWN, IGNORED };
 type Dict<T> = { [key:string]: T };
 
 class Device {
@@ -140,6 +140,7 @@ export class Input {
     private static _mousemoveEvent:any;
 
     static init(controls?:{ [name:string]: any }) {
+        debugger;
         this.axes = {};
         this.button = {};
         this.buttonMap = {};
