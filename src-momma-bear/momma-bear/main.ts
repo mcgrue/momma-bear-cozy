@@ -39,6 +39,61 @@ function addTile(x:number, y:number, frame:number) {
     map.push(sprite);
 }
 
+
+const oceanTiles = [4,5,6,7, // ocean
+];
+
+const weightedTileIndexArray = [
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+    4,5,6,7, // ocean
+
+    0,1,2,3, //grasses
+    0,1,2,3, //grasses
+    0,1,2,3, //grasses
+    0,1,2,3, //grasses
+
+    8,9,10,11, //mountain
+
+    12,13,14,15, // desert
+
+    16,17,18,19, // forest
+    16,17,18,19, // forest
+    16,17,18,19, // forest
+
+    20,21,22,23, //swamp
+
+    24,25,26,27, //wasteland
+
+    32,33,34,35, // hills
+    32,33,34,35, // hills
+];
+
+function getBetterTile() {
+    return weightedTileIndexArray[Math.floor(Math.random() * Math.floor(weightedTileIndexArray.length))];
+}
+
+function getOceanTile() {
+    return oceanTiles[Math.floor(Math.random() * Math.floor(oceanTiles.length))];
+}
+
 export function start() {
     Cozy.setBackground('#880088');
 
@@ -57,26 +112,51 @@ export function start() {
     /// The worst map generation algo
     for(y=0; y<20; y++) {
         for(x=0; x<30; x++) {
-            addTile(x,y, Math.floor(Math.random() * Math.floor(39)));
+
+            let tile = (x==0 || y==0 || y==19 || x==29) ? getOceanTile() : getBetterTile();
+
+            addTile(x,y, tile);
         }   
     }
+
+    /// set up game-specific blur/focus handlers
+    window.addEventListener('blur', (e) => {
+        console.log('main.ts go blurrrrrr');
+        isBlur = true;
+    });
+
+    window.addEventListener('focus', (e) => {
+        console.log('main.ts focus.  FOCUS!');
+        isBlur = false;
+        isBlurSkipFrame = true;
+    });
     
     Cozy.unpause();
 }
 
-export function frame(dt) {
-    // this will run every frame
-    // - dt is the number of seconds that have passed since the last frame
+let isBlur = false;
+let isBlurSkipFrame = false;
 
-    if( Cozy.Input.mouseInfo().buttons[0] === 1 ) { // enum Down.  Hopw do we expose the good enum here? >:()
-        let dx = Cozy.Input.mouseInfo().dx;
-        let dy = Cozy.Input.mouseInfo().dy;
-        
-        layer.adjustPosition(dx, dy);
-        console.log(`BOOP ${dx} ${dy}`);
-    } else {
-        console.log("UNBOOP");
+// this will run every frame
+// - dt is the number of seconds that have passed since the last frame
+export function frame(dt) {
+
+    /// TODO: maybe shadowbox if blurred?
+    if(isBlur) {
+        return;
     }
-    
+
+    if(isBlurSkipFrame) {
+        isBlurSkipFrame = false;
+    } else {
+        if( Cozy.Input.mouseInfo().buttons[0] === 1 ) { // enum Down.  Hopw do we expose the good enum here? >:()
+            let dx = Cozy.Input.mouseInfo().dx;
+            let dy = Cozy.Input.mouseInfo().dy;
+            
+            layer.adjustPosition(dx, dy);
+        }
+    }
+
+
 }
 

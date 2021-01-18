@@ -140,7 +140,6 @@ export class Input {
     private static _mousemoveEvent:any;
 
     static init(controls?:{ [name:string]: any }) {
-        debugger;
         this.axes = {};
         this.button = {};
         this.buttonMap = {};

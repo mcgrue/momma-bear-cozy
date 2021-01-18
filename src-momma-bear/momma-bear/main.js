@@ -109,6 +109,47 @@ function addTile(x, y, frame) {
     layer.add(sprite);
     map.push(sprite);
 }
+const oceanTiles = [4, 5, 6, 7,
+];
+const weightedTileIndexArray = [
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    4, 5, 6, 7,
+    0, 1, 2, 3,
+    0, 1, 2, 3,
+    0, 1, 2, 3,
+    0, 1, 2, 3,
+    8, 9, 10, 11,
+    12, 13, 14, 15,
+    16, 17, 18, 19,
+    16, 17, 18, 19,
+    16, 17, 18, 19,
+    20, 21, 22, 23,
+    24, 25, 26, 27,
+    32, 33, 34, 35,
+    32, 33, 34, 35,
+];
+function getBetterTile() {
+    return weightedTileIndexArray[Math.floor(Math.random() * Math.floor(weightedTileIndexArray.length))];
+}
+function getOceanTile() {
+    return oceanTiles[Math.floor(Math.random() * Math.floor(oceanTiles.length))];
+}
 function start() {
     Cozy.setBackground('#880088');
     map = [];
@@ -120,21 +161,37 @@ function start() {
     var x = 0;
     for (y = 0; y < 20; y++) {
         for (x = 0; x < 30; x++) {
-            addTile(x, y, Math.floor(Math.random() * Math.floor(39)));
+            let tile = (x == 0 || y == 0 || y == 19 || x == 29) ? getOceanTile() : getBetterTile();
+            addTile(x, y, tile);
         }
     }
+    window.addEventListener('blur', (e) => {
+        console.log('main.ts go blurrrrrr');
+        isBlur = true;
+    });
+    window.addEventListener('focus', (e) => {
+        console.log('main.ts focus.  FOCUS!');
+        isBlur = false;
+        isBlurSkipFrame = true;
+    });
     Cozy.unpause();
 }
 exports.start = start;
+let isBlur = false;
+let isBlurSkipFrame = false;
 function frame(dt) {
-    if (Cozy.Input.mouseInfo().buttons[0] === 1) {
-        let dx = Cozy.Input.mouseInfo().dx;
-        let dy = Cozy.Input.mouseInfo().dy;
-        layer.adjustPosition(dx, dy);
-        console.log(`BOOP ${dx} ${dy}`);
+    if (isBlur) {
+        return;
+    }
+    if (isBlurSkipFrame) {
+        isBlurSkipFrame = false;
     }
     else {
-        console.log("UNBOOP");
+        if (Cozy.Input.mouseInfo().buttons[0] === 1) {
+            let dx = Cozy.Input.mouseInfo().dx;
+            let dy = Cozy.Input.mouseInfo().dy;
+            layer.adjustPosition(dx, dy);
+        }
     }
 }
 exports.frame = frame;
