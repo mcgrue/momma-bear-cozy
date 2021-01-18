@@ -43,7 +43,19 @@
         Cozy.setup(arg, overrides)
             .then(() => {
                 require(arg.game + '/main.js'); // creates global.compiledGame
+                require(arg.game + '/hooks_for_startup.js'); // creates global.compiledGame
+
+                /// TODO: DO THIS BETTER
+                if(global.runBeforeGameInit) {
+                    global.runBeforeGameInit();
+                }
+
                 Cozy.run(this.compiledGame);
+
+                /// TODO: DO THIS BETTER
+                if(global.runAfterGameInit) {
+                    global.runAfterGameInit();
+                }
             });
     });
 })();
