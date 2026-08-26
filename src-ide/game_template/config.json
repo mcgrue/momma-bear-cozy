@@ -1,9 +1,0 @@
-{
-    "title": "$GAMENAME$",
-    "userdata": "$GAMENAME$",
-    "version": "0.0.1",
-    "width": 640,
-    "height": 480,
-    "integerUpscale": true,
-    "fullscreen": false
-}

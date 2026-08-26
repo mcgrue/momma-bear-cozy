@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#1c1626">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
+        <title>Momma Bear — terrain demo</title>
+        <link rel="stylesheet" href="standalone.css">
+        <script defer src="map-generator.js"></script>
+        <script defer src="standalone.js"></script>
+    </head>
+    <body data-momma-bear-demo>
+        <main class="demo-shell">
+            <canvas
+                class="world"
+                data-momma-bear-canvas
+                data-tileset="assets/arts/terrain_hextiles_painted_basic_256x384.png"
+                aria-label="A draggable, procedurally generated hex terrain map"
+            ></canvas>
+
+            <section class="demo-card" aria-label="Demo controls">
+                <p class="eyebrow">Terrain archaeology · 2021</p>
+                <h1>Momma Bear</h1>
+                <p>Generate a seeded 4X world, then drag the map to explore it.</p>
+
+                <form class="generator" data-momma-bear-generator>
+                    <label>
+                        <span>Seed</span>
+                        <input type="text" value="momma-bear" autocomplete="off" spellcheck="false" data-momma-bear-seed>
+                    </label>
+
+                    <label>
+                        <span>World</span>
+                        <select data-momma-bear-style>
+                            <option value="continents">Continents</option>
+                            <option value="pangaea">Pangaea</option>
+                            <option value="archipelago">Archipelago</option>
+                        </select>
+                    </label>
+
+                    <div class="button-row">
+                        <button type="submit">Generate</button>
+                        <button class="secondary" type="button" data-momma-bear-shuffle>New seed</button>
+                    </div>
+                </form>
+
+                <p class="map-stats" data-momma-bear-stats aria-live="polite"></p>
+
+                <div class="legend" aria-label="Map marker legend">
+                    <span><i class="food"></i>Food</span>
+                    <span><i class="production"></i>Production</span>
+                    <span><i class="strategic"></i>Strategic</span>
+                    <span><i class="luxury"></i>Luxury</span>
+                </div>
+
+                <button class="reset-view" type="button" data-momma-bear-reset>Reset view</button>
+            </section>
+
+            <p class="loading" data-momma-bear-loading role="status">Painting terrain…</p>
+        </main>
+    </body>
+</html>
