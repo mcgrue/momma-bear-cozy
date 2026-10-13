@@ -14,7 +14,13 @@ const files = [
     ['momma-bear/index.html', 'index.html'],
     ['momma-bear/standalone.css', 'standalone.css'],
     ['momma-bear/map-generator.js', 'map-generator.js'],
+    ['momma-bear/tile-manager.js', 'tile-manager.js'],
     ['momma-bear/standalone.js', 'standalone.js'],
+    ['momma-bear/assets/arts/crafting-herbalism-tools_sheet1.png', 'assets/arts/crafting-herbalism-tools_sheet1.png'],
+    ['momma-bear/assets/arts/gems_minerals_stone_metals_sheet1.png', 'assets/arts/gems_minerals_stone_metals_sheet1.png'],
+    ['momma-bear/assets/arts/gems_minerals_stone_metals_sheet2.png', 'assets/arts/gems_minerals_stone_metals_sheet2.png'],
+    ['momma-bear/assets/arts/resources_sheet00.png', 'assets/arts/resources_sheet00.png'],
+    ['momma-bear/assets/arts/resources_sheet00_sharper.png', 'assets/arts/resources_sheet00_sharper.png'],
     ['momma-bear/assets/arts/terrain_hextiles_painted_basic_256x384.png', 'assets/arts/terrain_hextiles_painted_basic_256x384.png'],
     ['README.md', 'README.md']
 ];

@@ -4,7 +4,10 @@
     const mapGenerator = typeof module === 'object' && module.exports
         ? require('./map-generator.js')
         : root.MommaBearMapGenerator;
-    const api = factory(mapGenerator);
+    const tileManager = typeof module === 'object' && module.exports
+        ? require('./tile-manager.js')
+        : root.TileManager;
+    const api = factory(mapGenerator, tileManager);
 
     if (typeof module === 'object' && module.exports) {
         module.exports = api;
@@ -13,9 +16,12 @@
     if (root) {
         root.MommaBear = api;
     }
-}(typeof window !== 'undefined' ? window : null, function (MapGenerator) {
+}(typeof window !== 'undefined' ? window : null, function (MapGenerator, TileManager) {
     if (!MapGenerator) {
         throw new Error('Momma Bear map generator failed to load.');
+    }
+    if (!TileManager) {
+        throw new Error('Momma Bear tile manager failed to load.');
     }
 
     const MAP_COLUMNS = MapGenerator.DEFAULT_COLUMNS;
@@ -230,14 +236,28 @@
                 const center = tileCenter(tile);
 
                 if (tile.resource) {
-                    context.beginPath();
-                    context.arc(center.x + (58 * state.zoom), center.y + (22 * state.zoom),
-                        10 * state.zoom, 0, Math.PI * 2);
-                    context.fillStyle = RESOURCE_COLORS[tile.resource];
-                    context.fill();
-                    context.lineWidth = 3 * state.zoom;
-                    context.strokeStyle = 'rgb(28 22 38 / 75%)';
-                    context.stroke();
+                    const markerX = center.x + (58 * state.zoom);
+                    const markerY = center.y + (22 * state.zoom);
+                    const markerSize = 72 * state.zoom;
+                    const resourceKey = TileManager.resourceTiles[tile.resource];
+
+                    context.save();
+                    context.shadowColor = 'rgb(10 6 18 / 80%)';
+                    context.shadowBlur = 8 * state.zoom;
+                    const spriteDrawn = resourceKey && TileManager.draw(context, resourceKey,
+                        markerX - (markerSize / 2), markerY - (markerSize / 2),
+                        markerSize, markerSize);
+                    context.restore();
+
+                    if (!spriteDrawn) {
+                        context.beginPath();
+                        context.arc(markerX, markerY, 10 * state.zoom, 0, Math.PI * 2);
+                        context.fillStyle = RESOURCE_COLORS[tile.resource];
+                        context.fill();
+                        context.lineWidth = 3 * state.zoom;
+                        context.strokeStyle = 'rgb(28 22 38 / 75%)';
+                        context.stroke();
+                    }
                 }
 
                 if (tile.start !== null) {
@@ -476,6 +496,10 @@
                 loading.classList.add('has-error');
             }
         };
+
+        TileManager.ready.then(render).catch(function () {
+            // Colored resource markers remain available if an optional sheet fails to load.
+        });
 
         canvas.addEventListener('pointerdown', onPointerDown);
         canvas.addEventListener('pointermove', onPointerMove);
