@@ -29,6 +29,7 @@
     const TILE_WIDTH = 256;
     const TILE_HEIGHT = 384;
     const TILE_ROW_STEP = 192;
+    const HEX_GRID_UNIT = 64;
     const TILESET_COLUMNS = 8;
     const BACKGROUND = '#880088';
     const MIN_ZOOM = 0.25;
@@ -307,11 +308,11 @@
             for (const river of state.world.riverEdges) {
                 const from = {
                     x: (river.from.x * TILE_WIDTH / 4 * state.zoom) + state.offsetX,
-                    y: (river.from.y * TILE_ROW_STEP / 2 * state.zoom) + state.offsetY
+                    y: (river.from.y * HEX_GRID_UNIT * state.zoom) + state.offsetY
                 };
                 const to = {
                     x: (river.to.x * TILE_WIDTH / 4 * state.zoom) + state.offsetX,
-                    y: ((river.to.y * TILE_ROW_STEP / 2) * state.zoom) + state.offsetY
+                    y: (river.to.y * HEX_GRID_UNIT * state.zoom) + state.offsetY
                 };
                 context.lineWidth = Math.min(13, 4 + Math.log2(river.accumulation)) * state.zoom;
                 context.beginPath();

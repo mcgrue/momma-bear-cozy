@@ -15,14 +15,14 @@ function edgeKey(first, second) {
 
 function tileCorners(tile) {
     const originX = (tile.column * 4) + (tile.row % 2 === 1 ? 2 : 0);
-    const originY = tile.row * 2;
+    const originY = tile.row * 3;
     return [
-        { x: originX + 2, y: originY },
-        { x: originX + 4, y: originY + 1 },
+        { x: originX + 2, y: originY + 2 },
         { x: originX + 4, y: originY + 3 },
-        { x: originX + 2, y: originY + 4 },
-        { x: originX, y: originY + 3 },
-        { x: originX, y: originY + 1 }
+        { x: originX + 4, y: originY + 5 },
+        { x: originX + 2, y: originY + 6 },
+        { x: originX, y: originY + 5 },
+        { x: originX, y: originY + 3 }
     ];
 }
 
