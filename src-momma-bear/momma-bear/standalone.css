@@ -41,6 +41,14 @@ body {
     cursor: grabbing;
 }
 
+.world.has-resource-hover {
+    cursor: help;
+}
+
+.world.is-dragging.has-resource-hover {
+    cursor: grabbing;
+}
+
 .demo-card {
     position: absolute;
     z-index: 2;
@@ -225,6 +233,22 @@ button:focus-visible {
 .loading.has-error {
     color: #ffd8df;
     background: #68172c;
+}
+
+.resource-tooltip {
+    position: fixed;
+    z-index: 4;
+    max-width: min(18rem, calc(100vw - 1.25rem));
+    padding: 0.45rem 0.65rem;
+    border: 1px solid rgb(255 249 232 / 30%);
+    border-radius: 0.5rem;
+    background: rgb(28 22 38 / 94%);
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 40%);
+    color: #fff9e8;
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1.2;
+    pointer-events: none;
 }
 
 [hidden] {

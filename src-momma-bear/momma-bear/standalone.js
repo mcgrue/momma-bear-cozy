@@ -149,6 +149,8 @@
         const styleInput = settings.styleInput || document.querySelector('[data-momma-bear-style]');
         const shuffle = settings.shuffle || document.querySelector('[data-momma-bear-shuffle]');
         const stats = settings.stats || document.querySelector('[data-momma-bear-stats]');
+        const resourceTooltip = settings.resourceTooltip
+            || document.querySelector('[data-momma-bear-resource-tooltip]');
 
         if (!canvas) {
             throw new Error('Momma Bear needs a canvas with data-momma-bear-canvas.');
@@ -199,6 +201,68 @@
             };
         }
 
+        function resourceMarker(tile) {
+            const center = tileCenter(tile);
+            return {
+                x: center.x + (58 * state.zoom),
+                y: center.y + (22 * state.zoom),
+                size: 72 * state.zoom
+            };
+        }
+
+        function hideResourceTooltip() {
+            canvas.classList.remove('has-resource-hover');
+            if (resourceTooltip) {
+                resourceTooltip.hidden = true;
+            }
+        }
+
+        function updateResourceTooltip(event) {
+            if (!resourceTooltip || state.dragging) {
+                hideResourceTooltip();
+                return;
+            }
+
+            const bounds = canvas.getBoundingClientRect();
+            const pointerX = event.clientX - bounds.left;
+            const pointerY = event.clientY - bounds.top;
+            let hoveredTile = null;
+
+            for (let index = state.tiles.length - 1; index >= 0; index -= 1) {
+                const tile = state.tiles[index];
+                if (!tile.resource) {
+                    continue;
+                }
+
+                const marker = resourceMarker(tile);
+                const hitRadius = Math.max(18, marker.size / 2);
+                if (Math.abs(pointerX - marker.x) <= hitRadius
+                    && Math.abs(pointerY - marker.y) <= hitRadius) {
+                    hoveredTile = tile;
+                    break;
+                }
+            }
+
+            if (!hoveredTile) {
+                hideResourceTooltip();
+                return;
+            }
+
+            const resourceKey = TileManager.resourceTiles[hoveredTile.resource];
+            resourceTooltip.textContent = TileManager.get(resourceKey).name;
+            resourceTooltip.hidden = false;
+            canvas.classList.add('has-resource-hover');
+
+            const gap = 14;
+            const edgePadding = 10;
+            const left = Math.max(edgePadding, Math.min(event.clientX + gap,
+                window.innerWidth - resourceTooltip.offsetWidth - edgePadding));
+            const top = Math.max(edgePadding, Math.min(event.clientY + gap,
+                window.innerHeight - resourceTooltip.offsetHeight - edgePadding));
+            resourceTooltip.style.left = `${left}px`;
+            resourceTooltip.style.top = `${top}px`;
+        }
+
         function drawRivers() {
             context.save();
             context.lineCap = 'round';
@@ -236,22 +300,20 @@
                 const center = tileCenter(tile);
 
                 if (tile.resource) {
-                    const markerX = center.x + (58 * state.zoom);
-                    const markerY = center.y + (22 * state.zoom);
-                    const markerSize = 72 * state.zoom;
+                    const marker = resourceMarker(tile);
                     const resourceKey = TileManager.resourceTiles[tile.resource];
 
                     context.save();
                     context.shadowColor = 'rgb(10 6 18 / 80%)';
                     context.shadowBlur = 8 * state.zoom;
                     const spriteDrawn = resourceKey && TileManager.draw(context, resourceKey,
-                        markerX - (markerSize / 2), markerY - (markerSize / 2),
-                        markerSize, markerSize);
+                        marker.x - (marker.size / 2), marker.y - (marker.size / 2),
+                        marker.size, marker.size);
                     context.restore();
 
                     if (!spriteDrawn) {
                         context.beginPath();
-                        context.arc(markerX, markerY, 10 * state.zoom, 0, Math.PI * 2);
+                        context.arc(marker.x, marker.y, 10 * state.zoom, 0, Math.PI * 2);
                         context.fillStyle = RESOURCE_COLORS[tile.resource];
                         context.fill();
                         context.lineWidth = 3 * state.zoom;
@@ -369,6 +431,7 @@
             state.dragging = false;
             state.pointerId = null;
             canvas.classList.remove('is-dragging');
+            hideResourceTooltip();
         }
 
         function onPointerDown(event) {
@@ -380,6 +443,7 @@
             state.pointerId = event.pointerId;
             state.lastX = event.clientX;
             state.lastY = event.clientY;
+            hideResourceTooltip();
             canvas.classList.add('is-dragging');
 
             if (canvas.setPointerCapture) {
@@ -388,7 +452,11 @@
         }
 
         function onPointerMove(event) {
-            if (!state.dragging || event.pointerId !== state.pointerId) {
+            if (!state.dragging) {
+                updateResourceTooltip(event);
+                return;
+            }
+            if (event.pointerId !== state.pointerId) {
                 return;
             }
 
@@ -402,6 +470,7 @@
 
         function onWheel(event) {
             event.preventDefault();
+            hideResourceTooltip();
 
             const deltaMultiplier = event.deltaMode === 1
                 ? 16
@@ -431,6 +500,7 @@
         }
 
         function resetMap() {
+            hideResourceTooltip();
             state.offsetX = 0;
             state.offsetY = 0;
             state.zoom = Math.max(1, minimumZoom());
@@ -505,6 +575,7 @@
         canvas.addEventListener('pointermove', onPointerMove);
         canvas.addEventListener('pointerup', stopDragging);
         canvas.addEventListener('pointercancel', stopDragging);
+        canvas.addEventListener('pointerleave', hideResourceTooltip);
         canvas.addEventListener('wheel', onWheel, { passive: false });
         window.addEventListener('blur', stopDragging);
         window.addEventListener('resize', resize);

@@ -152,6 +152,12 @@
     const sheets = Object.create(null);
     const tiles = Object.create(null);
 
+    function displayName(key) {
+        const baseKey = key.replace(/(?:Soft|Sharp)$/, '');
+        const words = baseKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
+        return words.charAt(0).toUpperCase() + words.slice(1);
+    }
+
     for (const definition of sheetDefinitions) {
         if (sheets[definition.key]) {
             throw new Error(`Duplicate tile sheet key: ${definition.key}`);
@@ -187,6 +193,7 @@
 
                 tiles[key] = Object.freeze({
                     key: key,
+                    name: displayName(key),
                     sheet: definition.key,
                     column: columnIndex,
                     row: rowIndex,
