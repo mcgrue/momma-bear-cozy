@@ -25,6 +25,9 @@
     const TILE_ROW_STEP = 192;
     const TILESET_COLUMNS = 8;
     const BACKGROUND = '#880088';
+    const MIN_ZOOM = 0.25;
+    const MAX_ZOOM = 3;
+    const ZOOM_SENSITIVITY = 0.0015;
 
     const OCEAN_FRAMES = Object.freeze([4, 5, 6, 7]);
     const TERRAIN_FRAMES = Object.freeze({
@@ -172,6 +175,7 @@
             lastY: 0,
             offsetX: 0,
             offsetY: 0,
+            zoom: 1,
             viewportWidth: 0,
             viewportHeight: 0,
             world: initialWorld,
@@ -182,8 +186,8 @@
 
         function tileCenter(tile) {
             return {
-                x: tile.x + state.offsetX + (TILE_WIDTH / 2),
-                y: tile.y + state.offsetY + (TILE_HEIGHT / 2)
+                x: ((tile.x + (TILE_WIDTH / 2)) * state.zoom) + state.offsetX,
+                y: ((tile.y + (TILE_HEIGHT / 2)) * state.zoom) + state.offsetY
             };
         }
 
@@ -193,18 +197,18 @@
             context.lineJoin = 'round';
             context.strokeStyle = '#65c9e8';
             context.shadowColor = 'rgb(10 66 102 / 70%)';
-            context.shadowBlur = 5;
+            context.shadowBlur = 5 * state.zoom;
 
             for (const river of state.world.riverEdges) {
                 const from = {
-                    x: (river.from.x * TILE_WIDTH / 4) + state.offsetX,
-                    y: (river.from.y * TILE_ROW_STEP / 2) + state.offsetY
+                    x: (river.from.x * TILE_WIDTH / 4 * state.zoom) + state.offsetX,
+                    y: (river.from.y * TILE_ROW_STEP / 2 * state.zoom) + state.offsetY
                 };
                 const to = {
-                    x: (river.to.x * TILE_WIDTH / 4) + state.offsetX,
-                    y: (river.to.y * TILE_ROW_STEP / 2) + state.offsetY
+                    x: (river.to.x * TILE_WIDTH / 4 * state.zoom) + state.offsetX,
+                    y: ((river.to.y * TILE_ROW_STEP / 2) * state.zoom) + state.offsetY
                 };
-                context.lineWidth = Math.min(13, 4 + Math.log2(river.accumulation));
+                context.lineWidth = Math.min(13, 4 + Math.log2(river.accumulation)) * state.zoom;
                 context.beginPath();
                 context.moveTo(from.x, from.y);
                 context.lineTo(to.x, to.y);
@@ -218,31 +222,32 @@
             context.save();
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            context.font = '800 18px ui-sans-serif, system-ui, sans-serif';
+            context.font = `800 ${18 * state.zoom}px ui-sans-serif, system-ui, sans-serif`;
 
             for (const tile of state.tiles) {
                 const center = tileCenter(tile);
 
                 if (tile.resource) {
                     context.beginPath();
-                    context.arc(center.x + 58, center.y + 22, 10, 0, Math.PI * 2);
+                    context.arc(center.x + (58 * state.zoom), center.y + (22 * state.zoom),
+                        10 * state.zoom, 0, Math.PI * 2);
                     context.fillStyle = RESOURCE_COLORS[tile.resource];
                     context.fill();
-                    context.lineWidth = 3;
+                    context.lineWidth = 3 * state.zoom;
                     context.strokeStyle = 'rgb(28 22 38 / 75%)';
                     context.stroke();
                 }
 
                 if (tile.start !== null) {
                     context.beginPath();
-                    context.arc(center.x, center.y, 27, 0, Math.PI * 2);
+                    context.arc(center.x, center.y, 27 * state.zoom, 0, Math.PI * 2);
                     context.fillStyle = '#fff3b0';
                     context.fill();
-                    context.lineWidth = 5;
+                    context.lineWidth = 5 * state.zoom;
                     context.strokeStyle = '#44295a';
                     context.stroke();
                     context.fillStyle = '#24152f';
-                    context.fillText(String(tile.start), center.x, center.y + 1);
+                    context.fillText(String(tile.start), center.x, center.y + state.zoom);
                 }
             }
 
@@ -260,14 +265,17 @@
                 return;
             }
 
+            const tileWidth = TILE_WIDTH * state.zoom;
+            const tileHeight = TILE_HEIGHT * state.zoom;
+
             for (const tile of state.tiles) {
-                const destinationX = Math.floor(tile.x + state.offsetX);
-                const destinationY = Math.floor(tile.y + state.offsetY);
+                const destinationX = Math.floor((tile.x * state.zoom) + state.offsetX);
+                const destinationY = Math.floor((tile.y * state.zoom) + state.offsetY);
 
                 if (destinationX >= width
                     || destinationY >= height
-                    || destinationX + TILE_WIDTH <= 0
-                    || destinationY + TILE_HEIGHT <= 0) {
+                    || destinationX + tileWidth <= 0
+                    || destinationY + tileHeight <= 0) {
                     continue;
                 }
 
@@ -280,8 +288,8 @@
                     TILE_HEIGHT,
                     destinationX,
                     destinationY,
-                    TILE_WIDTH,
-                    TILE_HEIGHT
+                    tileWidth,
+                    tileHeight
                 );
             }
 
@@ -341,9 +349,37 @@
             render();
         }
 
+        function onWheel(event) {
+            event.preventDefault();
+
+            const deltaMultiplier = event.deltaMode === 1
+                ? 16
+                : event.deltaMode === 2 ? state.viewportHeight : 1;
+            const zoomFactor = Math.exp(-event.deltaY * deltaMultiplier * ZOOM_SENSITIVITY);
+            const previousZoom = state.zoom;
+            const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM,
+                previousZoom * zoomFactor));
+
+            if (nextZoom === previousZoom) {
+                return;
+            }
+
+            const bounds = canvas.getBoundingClientRect();
+            const pointerX = event.clientX - bounds.left;
+            const pointerY = event.clientY - bounds.top;
+            const worldX = (pointerX - state.offsetX) / previousZoom;
+            const worldY = (pointerY - state.offsetY) / previousZoom;
+
+            state.zoom = nextZoom;
+            state.offsetX = pointerX - (worldX * nextZoom);
+            state.offsetY = pointerY - (worldY * nextZoom);
+            render();
+        }
+
         function resetMap() {
             state.offsetX = 0;
             state.offsetY = 0;
+            state.zoom = 1;
             render();
         }
 
@@ -410,6 +446,7 @@
         canvas.addEventListener('pointermove', onPointerMove);
         canvas.addEventListener('pointerup', stopDragging);
         canvas.addEventListener('pointercancel', stopDragging);
+        canvas.addEventListener('wheel', onWheel, { passive: false });
         window.addEventListener('blur', stopDragging);
         window.addEventListener('resize', resize);
         if (reset) {
