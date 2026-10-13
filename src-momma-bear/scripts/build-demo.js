@@ -22,6 +22,10 @@ const files = [
     ['momma-bear/assets/arts/resources_sheet00.png', 'assets/arts/resources_sheet00.png'],
     ['momma-bear/assets/arts/resources_sheet00_sharper.png', 'assets/arts/resources_sheet00_sharper.png'],
     ['momma-bear/assets/arts/terrain_hextiles_painted_basic_256x384.png', 'assets/arts/terrain_hextiles_painted_basic_256x384.png'],
+    ['momma-bear/assets/arts/towns/dirt-village-a.png', 'assets/arts/towns/dirt-village-a.png'],
+    ['momma-bear/assets/arts/towns/dirt-village-b.png', 'assets/arts/towns/dirt-village-b.png'],
+    ['momma-bear/assets/arts/towns/plains-village-a.png', 'assets/arts/towns/plains-village-a.png'],
+    ['momma-bear/assets/arts/towns/plains-village-b.png', 'assets/arts/towns/plains-village-b.png'],
     ['README.md', 'README.md']
 ];
 

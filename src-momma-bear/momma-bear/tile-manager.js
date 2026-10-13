@@ -209,6 +209,42 @@
     Object.freeze(sheets);
     Object.freeze(tiles);
 
+    const towns = Object.freeze({
+        plainsVillageTownA: Object.freeze({
+            key: 'plainsVillageTownA',
+            name: 'Plains Village A',
+            src: `${ART_ROOT}towns/plains-village-a.png`,
+            width: 256,
+            height: 384
+        }),
+        plainsVillageTownB: Object.freeze({
+            key: 'plainsVillageTownB',
+            name: 'Plains Village B',
+            src: `${ART_ROOT}towns/plains-village-b.png`,
+            width: 256,
+            height: 384
+        }),
+        dirtVillageTownA: Object.freeze({
+            key: 'dirtVillageTownA',
+            name: 'Dirt Village A',
+            src: `${ART_ROOT}towns/dirt-village-a.png`,
+            width: 256,
+            height: 384
+        }),
+        dirtVillageTownB: Object.freeze({
+            key: 'dirtVillageTownB',
+            name: 'Dirt Village B',
+            src: `${ART_ROOT}towns/dirt-village-b.png`,
+            width: 256,
+            height: 384
+        })
+    });
+
+    const startTownTiles = Object.freeze({
+        plains: Object.freeze(['plainsVillageTownA', 'plainsVillageTownB']),
+        dirt: Object.freeze(['dirtVillageTownA', 'dirtVillageTownB'])
+    });
+
     const resourceTiles = Object.freeze({
         food: 'wheatSheafSharp',
         production: 'lumberStackSharp',
@@ -233,7 +269,8 @@
             return loadPromise;
         }
 
-        loadPromise = Promise.all(Object.values(sheets).map((sheet) => new Promise((resolve, reject) => {
+        const imageDefinitions = Object.values(sheets).concat(Object.values(towns));
+        loadPromise = Promise.all(imageDefinitions.map((sheet) => new Promise((resolve, reject) => {
             const image = new Image();
             images[sheet.key] = image;
             image.onload = function () {
@@ -262,13 +299,33 @@
         return true;
     }
 
+    function drawTown(context, key, x, y, width, height) {
+        const town = towns[key];
+        if (!town) {
+            throw new Error(`Unknown town tile key: ${key}`);
+        }
+
+        const image = images[town.key];
+        if (!image || !image.complete || image.naturalWidth === 0) {
+            return false;
+        }
+
+        context.drawImage(image, x, y,
+            width === undefined ? town.width : width,
+            height === undefined ? town.height : height);
+        return true;
+    }
+
     const api = {
         sheets: sheets,
         tiles: tiles,
+        towns: towns,
         resourceTiles: resourceTiles,
+        startTownTiles: startTownTiles,
         get: get,
         load: load,
-        draw: draw
+        draw: draw,
+        drawTown: drawTown
     };
     api.ready = load();
 

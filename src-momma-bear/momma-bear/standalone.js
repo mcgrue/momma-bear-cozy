@@ -36,6 +36,7 @@
     const ZOOM_SENSITIVITY = 0.0015;
     const MAP_WIDTH = (MAP_COLUMNS * TILE_WIDTH) + (MAP_ROWS > 1 ? TILE_WIDTH / 2 : 0);
     const MAP_HEIGHT = ((MAP_ROWS - 1) * TILE_ROW_STEP) + TILE_HEIGHT;
+    const DIRT_TOWN_TERRAINS = Object.freeze(['desert', 'hills', 'wasteland']);
 
     const OCEAN_FRAMES = Object.freeze([4, 5, 6, 7]);
     const TERRAIN_FRAMES = Object.freeze({
@@ -210,6 +211,15 @@
             };
         }
 
+        function startTownKey(tile) {
+            if (tile.start !== 1 && tile.start !== 2) {
+                return null;
+            }
+
+            const terrainStyle = DIRT_TOWN_TERRAINS.includes(tile.terrain) ? 'dirt' : 'plains';
+            return TileManager.startTownTiles[terrainStyle][tile.start - 1];
+        }
+
         function hideResourceTooltip() {
             canvas.classList.remove('has-resource-hover');
             if (resourceTooltip) {
@@ -227,6 +237,7 @@
             const pointerX = event.clientX - bounds.left;
             const pointerY = event.clientY - bounds.top;
             let hoveredTile = null;
+            let hoveredName = null;
 
             for (let index = state.tiles.length - 1; index >= 0; index -= 1) {
                 const tile = state.tiles[index];
@@ -243,13 +254,35 @@
                 }
             }
 
-            if (!hoveredTile) {
+            if (hoveredTile) {
+                const resourceKey = TileManager.resourceTiles[hoveredTile.resource];
+                hoveredName = TileManager.get(resourceKey).name;
+            } else {
+                for (let index = state.tiles.length - 1; index >= 0; index -= 1) {
+                    const tile = state.tiles[index];
+                    const townKey = startTownKey(tile);
+                    if (!townKey) {
+                        continue;
+                    }
+
+                    const left = (tile.x * state.zoom) + state.offsetX;
+                    const top = (tile.y * state.zoom) + state.offsetY;
+                    if (pointerX >= left
+                        && pointerX <= left + (TILE_WIDTH * state.zoom)
+                        && pointerY >= top
+                        && pointerY <= top + (TILE_HEIGHT * state.zoom)) {
+                        hoveredName = TileManager.towns[townKey].name;
+                        break;
+                    }
+                }
+            }
+
+            if (!hoveredName) {
                 hideResourceTooltip();
                 return;
             }
 
-            const resourceKey = TileManager.resourceTiles[hoveredTile.resource];
-            resourceTooltip.textContent = TileManager.get(resourceKey).name;
+            resourceTooltip.textContent = hoveredName;
             resourceTooltip.hidden = false;
             canvas.classList.add('has-resource-hover');
 
@@ -288,6 +321,21 @@
             }
 
             context.restore();
+        }
+
+        function drawStartTowns() {
+            for (const tile of state.tiles) {
+                if (tile.start !== 1 && tile.start !== 2) {
+                    continue;
+                }
+
+                const townKey = startTownKey(tile);
+                TileManager.drawTown(context, townKey,
+                    Math.floor((tile.x * state.zoom) + state.offsetX),
+                    Math.floor((tile.y * state.zoom) + state.offsetY),
+                    TILE_WIDTH * state.zoom,
+                    TILE_HEIGHT * state.zoom);
+            }
         }
 
         function drawMapMarkers() {
@@ -377,6 +425,7 @@
                 );
             }
 
+            drawStartTowns();
             drawRivers();
             drawMapMarkers();
         }
