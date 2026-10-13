@@ -28,6 +28,8 @@
     const MIN_ZOOM = 0.25;
     const MAX_ZOOM = 3;
     const ZOOM_SENSITIVITY = 0.0015;
+    const MAP_WIDTH = (MAP_COLUMNS * TILE_WIDTH) + (MAP_ROWS > 1 ? TILE_WIDTH / 2 : 0);
+    const MAP_HEIGHT = ((MAP_ROWS - 1) * TILE_ROW_STEP) + TILE_HEIGHT;
 
     const OCEAN_FRAMES = Object.freeze([4, 5, 6, 7]);
     const TERRAIN_FRAMES = Object.freeze({
@@ -297,6 +299,33 @@
             drawMapMarkers();
         }
 
+        function minimumZoom() {
+            return Math.max(MIN_ZOOM,
+                state.viewportWidth / MAP_WIDTH,
+                state.viewportHeight / MAP_HEIGHT);
+        }
+
+        function constrainView() {
+            const requiredZoom = minimumZoom();
+
+            if (state.zoom < requiredZoom) {
+                const previousZoom = state.zoom;
+                const centerX = state.viewportWidth / 2;
+                const centerY = state.viewportHeight / 2;
+                const worldX = (centerX - state.offsetX) / previousZoom;
+                const worldY = (centerY - state.offsetY) / previousZoom;
+
+                state.zoom = requiredZoom;
+                state.offsetX = centerX - (worldX * state.zoom);
+                state.offsetY = centerY - (worldY * state.zoom);
+            }
+
+            state.offsetX = Math.min(0, Math.max(
+                state.viewportWidth - (MAP_WIDTH * state.zoom), state.offsetX));
+            state.offsetY = Math.min(0, Math.max(
+                state.viewportHeight - (MAP_HEIGHT * state.zoom), state.offsetY));
+        }
+
         function resize() {
             const bounds = canvas.getBoundingClientRect();
             const ratio = Math.max(1, window.devicePixelRatio || 1);
@@ -307,6 +336,7 @@
             canvas.height = Math.round(state.viewportHeight * ratio);
             context.setTransform(ratio, 0, 0, ratio, 0, 0);
             context.imageSmoothingEnabled = true;
+            constrainView();
             render();
         }
 
@@ -346,6 +376,7 @@
             state.offsetY += event.clientY - state.lastY;
             state.lastX = event.clientX;
             state.lastY = event.clientY;
+            constrainView();
             render();
         }
 
@@ -357,7 +388,9 @@
                 : event.deltaMode === 2 ? state.viewportHeight : 1;
             const zoomFactor = Math.exp(-event.deltaY * deltaMultiplier * ZOOM_SENSITIVITY);
             const previousZoom = state.zoom;
-            const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM,
+            const requiredZoom = minimumZoom();
+            const allowedMaximumZoom = Math.max(MAX_ZOOM, requiredZoom);
+            const nextZoom = Math.max(requiredZoom, Math.min(allowedMaximumZoom,
                 previousZoom * zoomFactor));
 
             if (nextZoom === previousZoom) {
@@ -373,13 +406,15 @@
             state.zoom = nextZoom;
             state.offsetX = pointerX - (worldX * nextZoom);
             state.offsetY = pointerY - (worldY * nextZoom);
+            constrainView();
             render();
         }
 
         function resetMap() {
             state.offsetX = 0;
             state.offsetY = 0;
-            state.zoom = 1;
+            state.zoom = Math.max(1, minimumZoom());
+            constrainView();
             render();
         }
 
