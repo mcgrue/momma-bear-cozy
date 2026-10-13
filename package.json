@@ -9,5 +9,8 @@
     "start": "npm --prefix src-momma-bear start",
     "build": "npm --prefix src-momma-bear run build",
     "test": "npm --prefix src-momma-bear test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }

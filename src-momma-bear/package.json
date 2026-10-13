@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/serve-demo.js",
     "build": "node scripts/build-demo.js",
-    "test": "node tests/root-package.test.js && node tests/deprecated-files.test.js && node tests/standalone-branding.test.js && node tests/standalone.test.js && node tests/map-generation.test.js && node tests/map-styles.test.js && node tests/river-boundaries.test.js"
+    "test": "node tests/root-package.test.js && node tests/deprecated-files.test.js && node tests/standalone-branding.test.js && node tests/standalone.test.js && node tests/map-generation.test.js && node tests/map-styles.test.js && node tests/river-boundaries.test.js && npm run test:browser",
+    "test:browser": "playwright test --config playwright.config.js"
   }
 }

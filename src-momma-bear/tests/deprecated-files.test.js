@@ -10,7 +10,6 @@ const deprecatedPaths = [
     'build',
     'error.log',
     'LICENSES.chromium.html',
-    'node_modules',
     'src-engine',
     'src-examples',
     'src-ide',
